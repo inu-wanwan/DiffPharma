@@ -1,0 +1,17 @@
+# Boltz runs out of process; do not install it into Pharma-env.
+# Eagle/WSL2 development command. Override launcher for TSUBAME's apptainer.
+launcher: [/home/rixyt/miniconda3/bin/conda, run, --no-capture-output, -n, boltz-env]
+executable: boltz
+boltz_commit: cb04aeccdd480fd4db707f0bbafde538397fa2ac
+cache_dir: /home/rixyt/workspace/DiffPharma_data/boltz_cache
+# Set a campaign-specific ceiling. Only cache misses count against it.
+max_evaluations: null
+use_msa_server: true
+msa_server_url: https://api.colabfold.com
+prediction:
+  seed: 0
+  sampling_steps_affinity: 200
+  diffusion_samples_affinity: 5
+  recycling_steps: 3
+  sampling_steps: 200
+  diffusion_samples: 1
