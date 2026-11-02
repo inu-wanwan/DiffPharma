@@ -53,7 +53,10 @@ fi
 # the import path lives on ext4. Provenance comes from the recorded commit,
 # not from the install mode.
 conda run --no-capture-output -n "$ENV_NAME" python -m pip install --upgrade pip
-conda run --no-capture-output -n "$ENV_NAME" python -m pip install "$BOLTZ_SRC"
+# The base package deliberately omits NVIDIA's cuEquivariance kernels.  They
+# are required unless every prediction uses --no_kernels, so install Boltz's
+# CUDA extra explicitly for the RTX 4090 / H100 execution path.
+conda run --no-capture-output -n "$ENV_NAME" python -m pip install "${BOLTZ_SRC}[cuda]"
 
 mkdir -p "$CACHE_DIR"
 

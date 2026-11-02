@@ -12,6 +12,58 @@ Binding Affinity Prediction", bioRxiv 2025.06.14.659707 (CC-BY 4.0).
 このファイルは**設計判断と検証済みの事実**を残すためのもので、未確認の項目は
 明示的にそう書いてある。実装を引き継ぐ場合は第 6 節から読めばよい。
 
+## 0. Phase 0 完了更新（2026-11-02）
+
+この節が下の初期調査メモより新しい。Phase 0 は Eagle の RTX 4090 で完了した。
+
+- Boltz 同梱 affinity example の実推論に成功。出力6フィールドを実物で確認した。
+- CrossDocked test 100件から pocket residue 数 x ligand heavy atom 数の
+  15/50/85 percentile 3x3 grid に最も近い9件を事前固定した。
+- RCSB から full-chain FASTA を取得し、Boltz single x9 と batch x1 を実測した。
+- `analysis/docking_GPU.py` と同じ Vina-GPU+ path も同じ9件で実測した。
+- 6 GPU-hours/experiment、20% reserve に Phase 1 の NFE=500 decode 21秒/分子も
+  加え、**450 decode + Boltz evaluations / experiment** を採用した。
+- batch capacity は数百件を超えるため、Phase 5 は Boltz-2 oracle を維持する。
+
+主要実測値:
+
+| metric | result |
+|---|---:|
+| Boltz single median / p95 / max | 62.555 / 75.514 / 77.014 s |
+| Boltz batch total (9) / per item | 126.821 / 14.091 s |
+| batch speedup | 4.439x |
+| Vina-GPU+ median / p95 / max | 2.733 / 5.887 / 6.029 s |
+| Boltz batch / Vina median | 5.156x |
+| Boltz-only batch capacity | 1,226 misses |
+| decode込み NFE=500 batch capacity / 採用 cap | 492 / 450 evaluations |
+
+固定条件は Boltz v2.2.1 commit
+`cb04aeccdd480fd4db707f0bbafde538397fa2ac`、seed 0、default sampling、
+`--no_kernels`、ColabFold MSA server on。MSA request は時間に含み、初回だけの
+weights/CCD download は除外した。throughput 評価なので pocket-contact constraint は
+入れていない。成果物と解釈上の制約は
+`analysis/boltz_phase0_results/README.md`、表は `timing_table.csv`、図は
+`throughput.png` に固定した。
+
+Vina は WSL2 で NVIDIA OpenCL が見えなかったため Windows から実行した。公式
+Vina-GPU+ 2.0 の OpenCL 3.0 compatibility として `kernel1.cl` の
+`address = &(ar->relation[temp]);` を `address = ar->relation[temp];` に変更し、
+初回 kernel compile 後の binary cache を9件で再利用した。再現用 diff は
+`scripts/boltz/vina_gpu_opencl3.patch`。
+
+実装済みの追加ファイル:
+
+- `scripts/boltz/prepare_phase0_inputs.py`: 9件固定、RCSB full-chain FASTA、YAML生成
+- `scripts/boltz/run_phase0_benchmark.py` / `.sh`: single と batch、失敗検出、retry
+- `scripts/boltz/analyze_phase0.py`: median/tail、Vina比較、予算、表・図
+- `scripts/boltz/run_phase0_docking.py` / Windows runner: docking 比較
+- `scripts/boltz/run_predict.sh`: 再現用の汎用 Boltz launcher
+
+`config/boltz.yml` は Phase 0 と同じ `no_kernels: true` と、決定した
+`max_evaluations: 450` を既定値にしている。Boltz client は cache miss を数え、
+optimization driver は decode attempt に同じ cap を適用する。下記の「未実施」「未解決」は初期調査時の
+記録として残しているため、現在状態の判断にはこの節を優先すること。
+
 ---
 
 ## 1. 前提: Boltz は Pharma-env に入らない（検証済み）
@@ -58,7 +110,7 @@ sekijima_lab_local/
 | 項目 | 状態 |
 |---|---|
 | boltz clone | **完了**。`../boltz`、タグ `v2.2.1`、commit `cb04aeccdd480fd4db707f0bbafde538397fa2ac` |
-| `scripts/boltz/setup_env.sh` | **完了・動作確認済み**（exit 0） |
+| `scripts/boltz/setup_env.sh` | **完了・動作確認済み**（exit 0）。CUDA extra を含める修正は未コミット。 |
 | conda env `boltz-env` | **完了・動作確認済み**（下記 provenance） |
 | `analysis/boltz_affinity.py` | **実装済み・ローカルテスト済み**（未コミット） |
 | `config/boltz.yml` | **実装済み**（Eagle の `boltz-env` launcher、未コミット） |

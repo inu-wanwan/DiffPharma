@@ -1,0 +1,10 @@
+sample,pdb_chain,protein_residues,pocket_residues,ligand_heavy_atoms,elapsed_seconds,docking_seconds
+sample-00,2ZEN:A,329,33,12,62.555,2.331
+sample-01,14GS:A,210,32,22,59.304,2.498
+sample-02,4RN0:B,389,35,33,69.483,2.956
+sample-03,3JYH:A,469,50,13,73.265,2.298
+sample-04,1GG5:A,273,50,23,59.313,2.733
+sample-05,5AEH:A,240,48,33,61.129,5.674
+sample-06,1L3L:A,234,59,17,58.88,2.595
+sample-07,5BUR:A,494,56,23,77.014,2.883
+sample-08,4IIY:A,371,59,32,66.633,6.029

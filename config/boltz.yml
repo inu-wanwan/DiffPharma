@@ -4,8 +4,11 @@ launcher: [/home/rixyt/miniconda3/bin/conda, run, --no-capture-output, -n, boltz
 executable: boltz
 boltz_commit: cb04aeccdd480fd4db707f0bbafde538397fa2ac
 cache_dir: /home/rixyt/workspace/DiffPharma_data/boltz_cache
-# Set a campaign-specific ceiling. Only cache misses count against it.
-max_evaluations: null
+# Phase-0 decision: after adding the NFE=500 decode cost (21 s/molecule),
+# 6 GPU-hours/experiment with a 20% reserve supports 492 batched evaluations.
+# Use a round cap with operational margin. Only Boltz cache misses count here;
+# the optimization driver must apply the same cap to decode attempts.
+max_evaluations: 450
 use_msa_server: true
 msa_server_url: https://api.colabfold.com
 prediction:
@@ -15,3 +18,6 @@ prediction:
   recycling_steps: 3
   sampling_steps: 200
   diffusion_samples: 1
+  # Phase-0 timing was measured with this setting; do not silently compare a
+  # different execution path until the CUDA-kernel path is benchmarked again.
+  no_kernels: true

@@ -1,0 +1,6 @@
+diff --git a/Vina-GPU+/OpenCL/src/kernels/kernel1.cl b/Vina-GPU+/OpenCL/src/kernels/kernel1.cl
+--- a/Vina-GPU+/OpenCL/src/kernels/kernel1.cl
++++ b/Vina-GPU+/OpenCL/src/kernels/kernel1.cl
+@@ -58 +58 @@
+-	address = &(ar->relation[temp]);
++	address = ar->relation[temp];
